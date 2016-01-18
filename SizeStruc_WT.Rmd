@@ -1,0 +1,300 @@
+---
+title: "FMDB Size Structure Walk-Through"
+author: "Derek H. Ogle"
+date: "January 17, 2016"
+output: 
+  html_document: 
+    fig_height: 4.5
+    fig_width: 4.5
+    highlight: haddock
+  pdf_document: 
+    fig_width: 4.5
+    highlight: haddock
+geometry: margin=0.6in
+---
+
+```{r echo=FALSE, results="hide"}
+# ============================================================
+# BEGIN -- Ignore this code (only for producing workshop handout)
+library(knitr)
+source("knitr_setup.R")
+options(str=strOptions(strict.width="cut"))
+rqrd <- c("knitr","fishWiDNR","FSA","dplyr","magrittr")
+# End -- Ignore this code
+# ============================================================
+```
+```{r eval=FALSE, echo=FALSE}
+if (require(FSA)) purl2("SizeStruc_WT.Rmd",topnotes="User must set working directory appropriately.")
+#if (require(knitr)) stitch("SizeStruc_WT.R")
+```
+
+\ 
+
+----
+
+# Packages
+
+Add-on packages are accessed with `library()`.  The following packages are required for the analyses demonstrated in this document.  Comments following each package are the list of functions used from the package.
+
+```{r echo=-1, message=FALSE, warning=FALSE}
+# Load packages
+library(fishWiDNR)   # for read.FMDB()
+library(FSA)         # for headtail(), filterD(), Summarize(), hist(), lencat(), psdVal(), psdAdd()
+library(dplyr)       # for %>%, select(), mutate(), group_by(), summarize()
+library(magrittr)    # for %<>%
+```
+
+\ 
+
+----
+
+# Loading CSV File from FM Database
+
+Data from the FM Database is extracted and saved into a comma-separated values (CSV) file.  These files will have a common format that you are likely familiar with.  These data may be read directly into R, but the format of the data in each column and the notation for missing values must be explicitly defined.  Additionally, a month field is often needed (but does not exist in the FM Database) and species names must be converted to all lower-case with the exception of the first letter for ease of use.
+
+In addition, the FM Database contains some records that reflect counts of fish with a particular length or range of lengths.  The analyses demonstrated in this workshop require records of individual fish.  Thus, these records need to be expanded (repeated) to represent individual fish.  Furthermore, random lengths within length bins can be created so that appropriate summary statistics may be calculated.  For example, if five fish were recorded between 8.0 and 8.4 inches, then it is necessary to create five fish that will have random lengths between 8.0 and 8.4 inches.
+
+The `read.FMDB()` function in the `fishWiDNR` package is designed to read the FM Database CSV file, appropriately set the format of the variables, add a month variable (in `Mon`) if `addMonth=TRUE` (the default), and change the species names to the appropriate case (in `Species1`) if `addSpecies=TRUE` (the default).  Additionally, the counts of fish will be expanded if `expandCounts=TRUE` (**NOT** the default).  By default the expanded lengths will be in inches, but this can be changed to mm with `whichLengths="mm"`.
+
+The example below sets the working directory (with `setwd()`) to where (on my computer) the Sawyer County data is found, reads the data (and expands the counts) with `read.FMDB()`, and examines the structure (with `str()`) and examines the first and last few rows of the data.frame in R (with `headtail()`).
+
+```{r echo=-1, cache=TRUE}
+# Load and examine the Sawyer County FMDB data
+setwd("C:/aaaWork/Web/GitHub/RcourseWiDNR2016")
+d <- read.FMDB("SAWYER_fish_raw_data_012915.csv",expandCounts=TRUE)
+str(d)
+headtail(d,n=2)
+```
+
+\ 
+
+----
+
+# Manipulating data.frames for Use
+### Selecting a Subset of Variables
+This data.frame contains a large number of variables, many of which you are likely not interested in for a particular analysis.  The data.frame can be reduced to a smaller number of variables with `select()` from the `dplyr` package.  This function takes the original data.frame as the first argument followed by the names of the variables that you wish to retain as additional arguments.  The code below reduces the original data.frame to only six variables.
+```{r echo=4}
+# ============================================================
+# BEGIN DEMO code only -- not strictly needed for this analysis
+# One version of select that does not use piping
+d <- select(d,Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
+```
+
+The `%>%` from the `dplyr` package and `%<>%` from the `magrittr` package can simplify this code.  The `%>%` operator "pipes" the data.frame on the left of the operator into the first argument of the function to the right of the operator.  For example, the code above could be written as follows.
+```{r echo=2}
+# A version that uses piping, but assignment is separate
+d <- d %>% select(Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
+# END DEMO code only
+# ============================================================
+```
+
+The `%<>%` operator also "pipes" the data.frame on the left of the operator into the first argument of the function to the right of the operator, **BUT** it **ALSO** assigns the result from the right of the operator to the object to the left of the operator.  Thus, the code from above is simplified as follows.
+```{r echo=-(1:3)}
+# Reduce number of variables ... for simplicity only, it is not
+#   necessary for this analysis
+# Combines piping and assignment with %<>%
+d %<>% select(Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
+headtail(d,n=2)
+```
+
+\ 
+
+### Adding Variables
+One often needs to add a variable to a data.frame that is constructed from other variables in the data.frame.  Varaibles can be added to a data.frame with `mutate()` from the `dplyr` packages.  This function takes the data.frame as the first argument and an argument of the form `newvar=expression`, where `newvar` is the name for the new variable and `expression` describes how the new variable is constructed.  For example, the following code adds the natural log of length to the data.frame.
+```{r echo=4:5}
+# ============================================================
+# BEGIN DEMO code only -- not strictly needed for this analysis
+# Add natural log of length
+d %<>% mutate(loglen=log(Len))
+headtail(d)
+```
+
+\ 
+
+### Adding Length Categories
+It is often useful to add a variable that contains length categories to the data.frame.  When used within `mutate()`, `lencat()` from the `FSA` package takes the name of the variable with the length data as the first argument and the width of the length categories in `w=`.  This function will choose "smart" starting values for the categories but you can also set the starting values with `startcat=` (not demonstrated here).  The following code creates a new variable called `Len10` that contains 10-mm length categories derived from the `Len` variable.
+```{r echo=-1}
+# Add 10-mm length categories variable to d
+d %<>% mutate(Len10=lencat(Len,w=10))
+headtail(d)
+```
+
+Specific length categories ("Stock", "Quality", etc.) have been defined for fisheries management purposes for many game species.  These length categories can be viewed for a species with `psdVal()` from the `FSA` package.  The first argument to this function is the name of the species.  The default is to return the lengths in mm, but lengths in inches may be returned by including `units="in"`.  These length categories for Bluegill are shown below.  [Note that the "substock" value is also returned for completeness.]
+```{r echo=2}
+# examine Gabelhouse length categories for Bluegill & LMB
+psdVal("Bluegill",units="in")
+psdVal("Largemouth Bass",units="in")
+# END DEMO code only
+# ============================================================
+```
+
+A variable that contains these categories for a single species can be added to a data.frame with `lencat()` and the `breaks=` argument.  However, it is more efficient to add a variable to a data.frame with these categories for **ALL** species for which they exist.  This is accomplished with `psdAdd()` from the `FSA` package, which when used with `mutate()`, requires the name of the variable with the length measurements as the first argument, the name of the variable with the species names as the second argument, and, if the measurements are in inches, `units="in"`.  Note that `psdAdd()` will, by default, return a message for each species for which these length categories have not been defined.  The `verbose=FALSE` will suppress these messages.
+```{r echo=-1}
+# Add Gabelhouse length categories for ALL species
+d %<>% mutate(Lcat=psdAdd(Len,Species1,units="in",verbose=FALSE))
+headtail(d)
+```
+
+\ 
+
+### Selecting a Subset of Individuals
+The current data.frame contains information from Sawyer County for many years, seasons, species, water bodies, etc.  A particular analysis may require you to restrict the data to a species, a water body, a species in a waterbody, a species in a waterbody within a year, etc.  Subsets of a data.frame can be constructed with `filterD()` from the `FSA` package (which is simply a modification of `filter()` from the `dplyr` package).  This function requires the original data.frame as the first argument followed by expressions that describe the condition for a subset.  Multiple conditions (arguments) are joined with an "and" (such that both conditions must be true).
+
+Four subsets of the `d` data.frame from above are created below for later use.  Can you describe the data in each of these data.frames?
+
+```{r echo=-1}
+# Create subsets for use below
+Spr <- filterD(d,Survey.Year==2013,Mon %in% c("Apr","May","Jun"))
+BGSpr <- filterD(Spr,Species1=="Bluegill")
+BGSprLC <- filterD(BGSpr,Waterbody.Name=="LAKE CHETAC",Gear=="BOOM SHOCKER")
+SprLC <- filterD(Spr,Waterbody.Name=="LAKE CHETAC")
+```
+
+\ 
+
+----
+
+# Summary Statistics and Graphics
+### Simple Summaries
+Frequencies of individuals are created with `xtabs()` which takes a formula of the form `~rows` or `~rows+cols`, where `rows` and `cols` generically represent the variables to form the rows and columns, respectively, of the frequency table.  The data.frame that contains the `rows` and `cols` variables must be given in `data=`.
+```{r echo=c(4,6)}
+# ============================================================
+# BEGIN DEMO code only -- not strictly needed for the analysis
+# Frequency of each species in spring Lake Chetac summaries
+xtabs(~Species1,data=SprLC)
+# Frequency of Bluegill by month and lake in Spring samples
+xtabs(~Mon+Waterbody.Name,data=BGSpr)
+# END DEMO code only
+# ============================================================
+```
+
+Summary statistics for a quantitative variable are efficiently computed with `Summarize()` from the `FSA` package (note the capital S).  This function takes a formula of the form `~quant`, where `quant` generically represents the name of a quantitative variable, as the first argument and the data.frame that contains that variable in `data=`.  The number of decimals for the returned statistics is optionally controlled with `digits=`.  The code below summarizes the lengths of Bluegill captured in Spring samples from Lake Chetac.
+```{r echo=-1}
+# Numericanl summaries of lengths of Lake Chetac Bluegill
+Summarize(~Len,data=BGSprLC,digits=2)
+```
+
+A histogram of a quantitative variable is constructed with `hist()` from the `FSA` package.  The first two arguments to `hist()` are exactly the same as the first two arguments to `Summarize()`.  The cutoffs for the bins on the histogram may be defined with `breaks=`.  For fisheries purposes, the cutoffs are usually evenly spaced and, thus, can be easily constructed as a sequence of values.  A simple sequence of values is constructed with `seq()` with the starting values as the first argument, the ending value as the last argument, and the step width between those two values as the last argument.  For example, the code in the `breaks=` below constructs a sequence of numbers that starts with 3, end with 9, with steps of 0.2 (i.e., 3, 3.2, 3.4, etc.).  The x and y axes are labeled with string in `xlab=` and `ylab=`, respectively.  The numerical limits of the x and y axes are controlled by including a vector of two values that represent the minimum and maximum values for the axes in `xlim=` and `ylim=`, respectively.
+```{r echo=-1}
+# Length frequency histogram
+hist(~Len,data=BGSprLC,breaks=seq(3,9,0.2),
+     xlab="Total Length (In.)",ylab="Number of Bluegill",
+     xlim=c(3,9),ylim=c(0,40))
+```
+
+\ 
+
+### Multiple Summaries
+Numerical summaries can be efficiently computed for multiple groups using a combination of `group_by()` and `summarize()` (note the lower-case s) from the `dplyr` package.  The `group_by` function creates groups for the data.frame given in it first argument based on the groups given in its ensuing arguments.  The `group_by()` function below will create groups based on `Waterbody.Name` (i.e., by lakes or rivers) for the `BGSpr` data.frame (which is "piped" into the first argument of `group_by()` with `%>%`).  The `summarize()` function then creates summaries defined by the user for each group.  A wide variety of summaries can be defined, but the example below uses `n()` to count the number of individuals (i.e., sample size), `mean()` to compute an average, `sd()` to compute a standard deviation, and `min()` and `max()` to compute the minimum and maximum values.  The `n()` function does not require any arguments, whereas the other functions require the name of a quantitative variable as the first argument.  Also note that these functions use `na.rm=TRUE` to remove missing values from the variable (otherwise, for example, a mean will not be computed).  Note that the `sum(!is.na(Len))` code is a "trick" used to count the number non-missing values in the variable (a "valid" sample size).  The result from `summarize()` is "piped" into `as.data.frame()` to remove the grouping structure (which is not needed after the summarization) and other attributes that were added to the result.  Thus, the code below computes the sample size, valid sample size, and mean, standard deviation, minimum, and maximum lengths of Bluegill in all water bodies sampled in the spring.
+```{r echo=-1}
+# Bluegill length summaries by waterbody (for spring samples)
+BGSpr %>%
+  group_by(Waterbody.Name) %>%
+  summarize(n=n(),valid_n=sum(!is.na(Len)),
+            meanLen=mean(Len,na.rm=TRUE),sdLen=sd(Len,na.rm=TRUE),
+            minLen=min(Len,na.rm=TRUE),maxLen=max(Len,na.rm=TRUE) ) %>%
+  as.data.frame()
+```
+
+The code below is similar to that above except that it uses all Spring catches grouped by fish species within water bodies, and the mean and standard deviations were rounded to two decimal places.  In addition, the result was "piped" into `write.csv` which will write out the results to the filename given in the first argument (in the current workin directory).  Note that `row.names=FALSE` was used in `write.csv` to suppress the writing of unneeded row numbers to the file.
+
+```{r echo=-(1:2)}
+# Length summaries by species within waterbodies
+#   Write results out to a file that can be opened in Excel
+Spr %>%
+  group_by(Waterbody.Name,Species1) %>%
+  summarize(n=n(),valid_n=sum(!is.na(Len)),
+            meanLen=round(mean(Len,na.rm=TRUE),2),sdLen=round(sd(Len,na.rm=TRUE),2),
+            minLen=min(Len,na.rm=TRUE),maxLen=max(Len,na.rm=TRUE) ) %>%
+  as.data.frame() %>%
+  write.csv("LenSum_Sawyer_Spr13.csv",row.names=FALSE)
+```
+
+\ 
+
+----
+
+# PSD Calculations
+### Single Waterbody and Species (version 1)
+The PSD values are calculated in three steps -- (1) find the frequency of individuals between each category with `xtabs()` (as described above), (2) computing a reverse cumulative summary with `rcumsum()` from the `xtabs()` result to find the frequency of individuals in each category (i.e., each category is the number of fish of that size **or greater**), and (3) dividing each reverse cumulative frequency the number of stock-length fish and multiplying by 100.  These calculations are shown below for the Lake Chetac Bluegill.
+```{r echo=c(2,4,6,8)}
+# frequency of individuals between each length category
+( freq <- xtabs(~Lcat,data=BGSprLC) )
+# reverse cumulative sum ... freq of each category
+( rcum <- rcumsum(freq) )
+# extract the "stock" frequency ... DEMO only
+rcum["stock"]
+# compute PSD values
+rcum/rcum["stock"]*100
+```
+
+\ 
+
+### Single Waterbody and Species (version 2)
+Lengths other than those defined for a species may be of particular interest to the fisheries biologist.  For example, one may be interested in the PSD-7 which is the percentage of stock-length Bluegill that are longer than 7 inches.  To perform this calculation, 7 inches must first be added to the vector length categories with the `addLens=` argument in `psdVal()`.  THis vector is then given to `breaks=` in `lencat()` to create a new length category variable that will include a category for 7 inches.  In this example, `use.names=TRUE` was used so that category names ("stock","quality", etc.) are used rathern than numbers ("3","6", etc.) and `drop.levels=TRUE` was used to drop categories for which no fish were found in the data.frame (for example, "trophy" will be dropped here becuase no trophy-length fish were captured).  This new variable is then summarized as above.
+```{r echo=c(2,4:7)}
+# Vector of length categories, with one for 7 in
+( brks <- psdVal("Bluegill",units="in",addLens=7) )
+# New variable with new length categories
+BGSprLC %<>% mutate(Lcat2=lencat(Len,breaks=brks,use.names=TRUE,drop.levels=TRUE))
+( freq <- xtabs(~Lcat2,data=BGSprLC) )
+( rcum <- rcumsum(freq) )
+round(rcum/rcum["stock"]*100,1)
+```
+
+\ 
+
+### Multiple Waterbodies and Single Species 
+Frequencies can be computed for multiple water bodies using `xtabs()` as described above (note that a new variable was added to the data.frame of Spring-captured Bluegill from multiple water bodies that included the 7 inch category.)
+```{r}
+BGSpr %<>% mutate(Lcat2=lencat(Len,breaks=brks,use.names=TRUE,drop.levels=TRUE))
+( freq <- xtabs(~Waterbody.Name+Lcat2,data=BGSpr) )
+```
+
+However, it is not as simple to turn these frequencies into PSD values because the reverse cumulative sum must be computed for each **row** of the frequency table.  The `apply()` function can be used to "apply" a function to each row or column of a matrix.  The `apply()` function takes the matrix (or frequency table, in this case) as the first argument and the function to "apply" is given in `FUN=`.  The function will be applied to the rows if `MARGIN=1` and to the columns if `MARGIN=2`.  This calculation is demonstrated below.
+
+```{r, echo=3:4, results='hide'}
+# ============================================================
+# BEGIN DEMO code only -- not strictly needed for the analysis
+# apply() result has wrong orientation, only partial results shown
+apply(freq,FUN=rcumsum,MARGIN=1)
+```
+```{r, echo=FALSE}
+apply(freq,FUN=rcumsum,MARGIN=1)[1:5,1:6]
+# BEGIN DEMO code only -- not strictly needed for the analysis
+# ============================================================
+```
+
+Unfortunately, the results from `apply()` are not oriented to meet our needs (i.e., water bodies are in columns rather than rows).  The orientation of the result can be "transposed" with `t()` as shown below (and note that this result is assigned to the `rcum` object).  Another potential problem is that these results contain the substock-length fish.  These fish can be removed by eliminating the first column in the `rcum` table.
+```{r echo=c(2,4)}
+# properly oriented table of reverse cumulative sums by lake
+( rcum <- t(apply(freq,FUN=rcumsum,MARGIN=1)) )
+# remove "substock" column
+rcum <- rcum[,-1]
+```
+
+The PSD values are then computed as before.
+```{r echo=-1}
+# Compute PSD values
+round(rcum/rcum[,"stock"]*100,1)
+```
+
+\ 
+
+#### Multiple Species in a Single Waterbody
+Similar code can be used to summarize multiple species in a single waterbody.  However, there is no simple way to use "other" lengths for individual species (e.g., it is not simple to include a 7 inch category for Bluegill and a 14 inch category for Largemouth Bass).  Thus, this summary can only be computed for the main length categories (which are in the `LCat` variable for the data.frames created further above).
+```{r echo=-1}
+# Compute PSDs for multiple species in a single waterbody
+( freq <- xtabs(~Species1+Lcat,data=SprLC) )
+( rcum <- t(apply(freq,FUN=rcumsum,MARGIN=1)) )
+rcum <- rcum[,-1] 
+round(rcum/rcum[,"stock"]*100,1)
+```
+
+\ 
+
+----
+
+```{r echo=FALSE, results='asis'}
+reproInfo(rqrdPkgs=rqrd,out="markdown",links=c(Script="SizeStruc_WT.R",RMarkdown="SizeStruc_WT.Rmd"))
+```

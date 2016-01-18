@@ -1,0 +1,19 @@
+# History files
+.Rhistory
+
+# R data files from past sessions
+.Rdata
+
+# RStudio files
+.Rproj.user/
+.Rproj.user
+
+# Administrative stuff
+Admin_and_Preparation/
+
+# Intermediate and Cached Files to Ignore
+Figs/
+SizeStruc_WT_cache/
+LenSum_Sawyer_Spr13.csv
+
+# Old stuff to ignore
