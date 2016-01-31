@@ -1,5 +1,7 @@
 # User must set working directory appropriately.
 
+                        topnotes="User must set working directory appropriately.")
+
 # Load packages
 library(fishWiDNR)   # for read.FMDB()
 library(FSA)         # for headtail(), filterD(), Summarize(), hist(), lencat(), psdVal(), psdAdd()
@@ -140,4 +142,4 @@ rcum <- rcum[,-1]
 round(rcum/rcum[,"stock"]*100,1)
 
 
-# Script created at 2016-01-31 14:37:29
+# Script created at 2016-01-31 16:14:11
