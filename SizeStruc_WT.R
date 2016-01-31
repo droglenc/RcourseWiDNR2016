@@ -1,12 +1,4 @@
 # User must set working directory appropriately.
-# ============================================================
-# BEGIN -- Ignore this code (only for producing workshop handout)
-library(knitr)
-source("knitr_setup.R")
-options(str=strOptions(strict.width="cut"))
-rqrd <- c("knitr","fishWiDNR","FSA","dplyr","magrittr")
-# End -- Ignore this code
-# ============================================================
 
 # Load packages
 library(fishWiDNR)   # for read.FMDB()
@@ -148,4 +140,4 @@ rcum <- rcum[,-1]
 round(rcum/rcum[,"stock"]*100,1)
 
 
-# Script created at 2016-01-31 14:23:52
+# Script created at 2016-01-31 14:37:29

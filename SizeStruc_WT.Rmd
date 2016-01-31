@@ -13,18 +13,14 @@ geometry: margin=0.6in
 ---
 
 ```{r echo=FALSE, results="hide"}
-# ============================================================
-# BEGIN -- Ignore this code (only for producing workshop handout)
 library(knitr)
 source("knitr_setup.R")
 options(str=strOptions(strict.width="cut"))
 rqrd <- c("knitr","fishWiDNR","FSA","dplyr","magrittr")
-# End -- Ignore this code
-# ============================================================
 ```
 ```{r eval=FALSE, echo=FALSE}
-if (require(FSA)) purl2("SizeStruc_WT.Rmd",topnotes="User must set working directory appropriately.")
-#if (require(knitr)) stitch("SizeStruc_WT.R")
+if (require(FSA)) purl2("SizeStruc_WT.Rmd",moreItems=c("knitr","strOptions"),
+                        topnotes="User must set working directory appropriately.")
 ```
 
 \ 
