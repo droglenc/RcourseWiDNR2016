@@ -2,12 +2,12 @@
 title: "FMDB Size Structure Walk-Through"
 author: "Derek H. Ogle"
 date: "January 17, 2016"
-output: 
-  html_document: 
-    fig_height: 4.5
+output:
+  pdf_document:
     fig_width: 4.5
     highlight: haddock
-  pdf_document: 
+  html_document:
+    fig_height: 4.5
     fig_width: 4.5
     highlight: haddock
 geometry: margin=0.6in
