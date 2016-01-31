@@ -15,6 +15,8 @@ library(dplyr)       # for %>%, select(), mutate(), group_by(), summarize()
 library(magrittr)    # for %<>%
 
 # Load and examine the Sawyer County FMDB data
+# User must set working directory appropriate to where the CSV file
+#   is saved on their computer ... below if for Derek's computer.
 setwd("C:/aaaWork/Web/GitHub/RcourseWiDNR2016")
 d <- read.FMDB("SAWYER_fish_raw_data_012915.csv",expandCounts=TRUE)
 str(d)
@@ -42,13 +44,13 @@ headtail(d,n=2)
 d %<>% mutate(loglen=log(Len))
 headtail(d)
 
-# Add 10-mm length categories variable to d
-d %<>% mutate(Len10=lencat(Len,w=10))
+# Add 1-in length categories variable to d
+d %<>% mutate(Len1=lencat(Len,w=1))
 headtail(d)
 
-# examine Gabelhouse length categories for Bluegill & LMB
-psdVal("Bluegill",units="in")
+# examine Gabelhouse length categories for LMB & WAE
 psdVal("Largemouth Bass",units="in")
+psdVal("Walleye",units="in")
 # END DEMO code only
 # ============================================================
 
@@ -58,6 +60,8 @@ headtail(d)
 
 # Create subsets for use below
 Spr <- filterD(d,Survey.Year==2013,Mon %in% c("Apr","May","Jun"))
+str(Spr)
+
 BGSpr <- filterD(Spr,Species1=="Bluegill")
 BGSprLC <- filterD(BGSpr,Waterbody.Name=="LAKE CHETAC",Gear=="BOOM SHOCKER")
 SprLC <- filterD(Spr,Waterbody.Name=="LAKE CHETAC")
@@ -110,6 +114,8 @@ rcum/rcum["stock"]*100
 ( brks <- psdVal("Bluegill",units="in",addLens=7) )
 # New variable with new length categories
 BGSprLC %<>% mutate(Lcat2=lencat(Len,breaks=brks,use.names=TRUE,drop.levels=TRUE))
+headtail(BGSprLC)
+
 ( freq <- xtabs(~Lcat2,data=BGSprLC) )
 ( rcum <- rcumsum(freq) )
 round(rcum/rcum["stock"]*100,1)
@@ -128,6 +134,7 @@ apply(freq,FUN=rcumsum,MARGIN=1)[1:5,1:6]
 
 # properly oriented table of reverse cumulative sums by lake
 ( rcum <- t(apply(freq,FUN=rcumsum,MARGIN=1)) )
+
 # remove "substock" column
 rcum <- rcum[,-1]
 
@@ -141,4 +148,4 @@ rcum <- rcum[,-1]
 round(rcum/rcum[,"stock"]*100,1)
 
 
-# Script created at 2016-01-18 10:58:22
+# Script created at 2016-01-31 14:23:52
