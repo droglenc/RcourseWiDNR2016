@@ -1,12 +1,22 @@
 # User must set working directory appropriately.
 
-                        topnotes="User must set working directory appropriately.")
-
 # Load packages
 library(fishWiDNR)   # for read.FMDB()
 library(FSA)         # for headtail(), filterD(), Summarize(), hist(), lencat(), psdVal(), psdAdd()
 library(dplyr)       # for %>%, select(), mutate(), group_by(), summarize()
 library(magrittr)    # for %<>%
+
+# User must set working directory appropriate to where the CSV file
+#   is saved on their computer ... below if for Derek's computer.
+setwd("C:/aaaWork/Web/GitHub/RcourseWiDNR2016")
+
+# ============================================================
+# BEGIN DEMO code only -- used to show unexpanded data
+d <- read.FMDB("SAWYER_fish_raw_data_012915.csv") %>%
+  select(County,Waterbody.Name,Survey.Year,Number.of.Fish,Length.or.Lower.Length.IN,Length.Upper.IN)
+headtail(d)
+# END DEMO code only
+# ============================================================
 
 # Load and examine the Sawyer County FMDB data
 # User must set working directory appropriate to where the CSV file
@@ -142,4 +152,4 @@ rcum <- rcum[,-1]
 round(rcum/rcum[,"stock"]*100,1)
 
 
-# Script created at 2016-01-31 16:14:11
+# Script created at 2016-02-25 07:29:31

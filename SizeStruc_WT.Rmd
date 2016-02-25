@@ -81,7 +81,7 @@ headtail(d)
 # ============================================================
 ```
 
-The analyses demonstrated in this workshop require records for individual fish and prefers more precise length measurements.  Thus, these records need to be expanded (repeated) to represent individual fish and a random length within the length bin needs to be defined for each fish.  For example, if two fish were recorded between 11.5 and 11.9 inches, then it is necessary to create five fish that will have random lengths between 11.5 and 11.9 inches.
+The analyses demonstrated in this workshop require records for individual fish and prefers more precise length measurements.  Thus, these records need to be expanded (repeated) to represent individual fish and a random length within the length bin needs to be defined for each fish.  For example, if two fish were recorded between 11.5 and 11.9 inches, then it is necessary to create two fish that will have random lengths between 11.5 and 11.9 inches.
 
 The `read.FMDB()` function in the `fishWiDNR` package is designed to read the FM Database CSV file, appropriately set the format of the variables, add a month variable (in `Mon`) if `addMonth=TRUE` (the default), and change the species names to the appropriate case (in `Species1`) if `addSpecies=TRUE` (the default).  Additionally, the counts of fish will be expanded if `expandCounts=TRUE` (**NOT** the default).  By default the expanded lengths will be in inches, but this can be changed to mm with `whichLengths="mm"`.
 
@@ -239,7 +239,7 @@ BGSpr %>%
   as.data.frame()
 ```
 
-The code below is similar to that above except that it uses all Spring catches grouped by fish species within water bodies, and the mean and standard deviations were rounded to two decimal places.  In addition, the result was "piped" into `write.csv` which will write out the results to the filename given in the first argument (in the current working directory).  Note that `row.names=FALSE` was used in `write.csv` to suppress the writing of unneeded row numbers to the file.
+The code below is similar to that above except that it uses all Spring catches grouped by fish species within water bodies, and the mean and standard deviations were rounded to two decimal places.  In addition, the result was "piped" into `write.csv` which will write the results to the filename given in the first argument (in the current working directory).  Note that `row.names=FALSE` was used in `write.csv` to suppress the writing of unneeded row numbers to the file.
 
 ```{r echo=-(1:2)}
 # Length summaries by species within waterbodies
