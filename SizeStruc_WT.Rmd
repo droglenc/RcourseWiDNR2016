@@ -45,7 +45,7 @@ library(magrittr)    # for %<>%
 
 ### Retrieving Raw Fish Data from the FM Database
 
-Raw fish data from the FM Database is extracted and saved into a comma-separated values (CSV) file that will have a common format that you are likely familiar with.  **MORE HERE**
+Raw fish data from the FM Database is extracted and saved into a comma-separated values (CSV) file that will have a common format that you are likely familiar with.  In this workshop, we will all use data retrieved for Sawyer Country.  Outside of this workshop, raw fish data files should be generated using the Raw Data – Fish Raw Data report in the FMDB.  You can then narrow the query down to a specific survey using the search parameters within the database.  Use the Actions button – Download option (choosing CSV as download format) to save the raw data file to your specified working folder.
 
 ### Setting the Working Directory (Very Important)
 
@@ -100,6 +100,8 @@ headtail(d,n=2)
 \ 
 
 ----
+
+\newpage
 
 # Manipulating data.frames for Use
 ### Selecting a Subset of Variables
