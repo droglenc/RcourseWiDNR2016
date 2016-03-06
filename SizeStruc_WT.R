@@ -21,9 +21,11 @@ headtail(d,n=2)
 # == BEGIN DEMO code only -- not strictly needed for this analysis =============
 # One version of select that does not use piping
 d <- select(d,Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
+headtail(d,n=2)
 
 # A version that uses piping, but assignment is separate
 d <- d %>% select(Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
+headtail(d,n=2)
 #  == END DEMO code only ======================================================
 
 # Reduce number of variables ... for simplicity only, it is not
@@ -71,7 +73,7 @@ xtabs(~Species1,data=SprLC)
 xtabs(~Mon+Waterbody.Name,data=BGSpr)
 # == END DEMO code only ========================================================
 
-# Numericanl summaries of lengths of Lake Chetac Bluegill
+# Numerical summaries of lengths of Lake Chetac Bluegill
 Summarize(~Len,data=BGSprLC,digits=2)
 
 # Length frequency histogram
@@ -132,6 +134,7 @@ apply(freq,FUN=rcumsum,MARGIN=1)
 
 # remove "substock" column
 rcum <- rcum[,-1]
+rcum
 
 # Compute PSD values
 round(rcum/rcum[,"stock"]*100,1)
@@ -143,4 +146,4 @@ rcum <- rcum[,-1]
 round(rcum/rcum[,"stock"]*100,1)
 
 
-# Script created at 2016-03-06 13:07:19
+# Script created at 2016-03-06 17:35:06

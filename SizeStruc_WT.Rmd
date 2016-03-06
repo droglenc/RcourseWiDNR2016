@@ -106,16 +106,18 @@ headtail(d,n=2)
 
 ### Selecting a Subset of Variables
 This data.frame contains a large number of variables, many of which you are likely not interested in for a particular analysis.  The data.frame can be reduced to a smaller number of variables with `select()` from the `dplyr` package.  This function takes the original data.frame as the first argument followed by the names of the variables that you wish to retain as additional arguments.  The code below reduces the original data.frame to only six variables.
-```{r echo=3}
+```{r echo=3, results="hide"}
 # == BEGIN DEMO code only -- not strictly needed for this analysis =============
 # One version of select that does not use piping
 d <- select(d,Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
+headtail(d,n=2)
 ```
 
 The `%>%` from the `dplyr` package and `%<>%` from the `magrittr` package can simplify this code.  The `%>%` operator "pipes" the data.frame on the left of the operator into the first argument of the function to the right of the operator.  For example, the code above could be written as follows.
-```{r echo=2}
+```{r echo=2, results="hide"}
 # A version that uses piping, but assignment is separate
 d <- d %>% select(Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
+headtail(d,n=2)
 #  == END DEMO code only ======================================================
 ```
 
@@ -217,7 +219,7 @@ xtabs(~Mon+Waterbody.Name,data=BGSpr)
 
 Summary statistics for a quantitative variable are efficiently computed with `Summarize()` (note the capital S) from the `FSA` package.  This function takes a formula of the form `~quant` as the first argument, where `quant` generically represents the name of a quantitative variable, and the data.frame that contains that variable in `data=`.  The number of decimals for the returned statistics is optionally controlled with `digits=`.  The code below summarizes the lengths of Bluegill captured in Spring samples from Lake Chetac.
 ```{r echo=-1}
-# Numericanl summaries of lengths of Lake Chetac Bluegill
+# Numerical summaries of lengths of Lake Chetac Bluegill
 Summarize(~Len,data=BGSprLC,digits=2)
 ```
 
@@ -331,9 +333,10 @@ Unfortunately, the results from `apply()` are not oriented to meet our needs (i.
 ```
 
 Another problem here is that these results contain the substock-length fish.  These fish can be removed by eliminating the first column in the `rcum` table.
-```{r echo=2}
+```{r echo=2, results='hide'}
 # remove "substock" column
 rcum <- rcum[,-1]
+rcum
 ```
   
 The PSD values are then computed as before.
