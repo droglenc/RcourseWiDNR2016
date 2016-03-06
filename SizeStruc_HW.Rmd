@@ -22,9 +22,9 @@ Create a script that performs the following tasks (*Note that you will need to l
 
 1. Further prepare the data for analysis by reducing the variables to only the species name (properly capitalized), waterbody name, gear, year, month, and length (in inches and after expansion) and adding Gabelhouse length categories ("stock", "quality", etc.) for all species for which these categories have been defined.
 
-1. Create a subset of data that consists of a single year for which there is a larger overall sample size in the "Fall."  [*HINT: First, make a two-way frequency table with sampling year as rows and months as columns.*]
+1. Create a subset of data that consists of a single year for which there is a "large" overall sample size in the "Fall."  [*HINT: First, make a two-way frequency table with sampling year as rows and months as columns.*]
 
-1. Identify a gamefish species and waterbody for which a large sample size exists.  [*HINT: Make two one-way frequency tables.*]
+1. Identify a gamefish species and waterbody for which a "large" sample size exists.  [*HINT: Make two one-way frequency tables.*]
 
 1. Create three new subsets of data -- (1) your gamefish species (for all waterbodies, gears, etc.), (2) your waterbody (for all species, gears, etc.), and (3) your species in your waterbody.
 
