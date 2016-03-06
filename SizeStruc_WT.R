@@ -7,34 +7,24 @@ library(dplyr)       # for %>%, select(), mutate(), group_by(), summarize()
 library(magrittr)    # for %<>%
 
 # User must set working directory appropriate to where the CSV file
-#   is saved on their computer ... below if for Derek's computer.
+#   is saved on their computer ... below is for Derek's computer.
 setwd("C:/aaaWork/Web/GitHub/RcourseWiDNR2016")
-
-# ============================================================
-# BEGIN DEMO code only -- used to show unexpanded data
-d <- read.FMDB("SAWYER_fish_raw_data_012915.csv") %>%
-  select(County,Waterbody.Name,Survey.Year,Number.of.Fish,Length.or.Lower.Length.IN,Length.Upper.IN)
-headtail(d)
-# END DEMO code only
-# ============================================================
 
 # Load and examine the Sawyer County FMDB data
-# User must set working directory appropriate to where the CSV file
-#   is saved on their computer ... below if for Derek's computer.
-setwd("C:/aaaWork/Web/GitHub/RcourseWiDNR2016")
 d <- read.FMDB("SAWYER_fish_raw_data_012915.csv",expandCounts=TRUE)
 str(d)
 headtail(d,n=2)
 
-# ============================================================
-# BEGIN DEMO code only -- not strictly needed for this analysis
+# ==========================================
+# ======= MANIPULATING DATA.FRAMES ========= 
+
+# == BEGIN DEMO code only -- not strictly needed for this analysis =============
 # One version of select that does not use piping
 d <- select(d,Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
 
 # A version that uses piping, but assignment is separate
 d <- d %>% select(Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
-# END DEMO code only
-# ============================================================
+#  == END DEMO code only ======================================================
 
 # Reduce number of variables ... for simplicity only, it is not
 #   necessary for this analysis
@@ -42,8 +32,7 @@ d <- d %>% select(Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
 d %<>% select(Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
 headtail(d,n=2)
 
-# ============================================================
-# BEGIN DEMO code only -- not strictly needed for this analysis
+# == BEGIN DEMO code only -- not strictly needed for this analysis =============
 # Add natural log of length
 d %<>% mutate(loglen=log(Len))
 headtail(d)
@@ -55,8 +44,7 @@ headtail(d)
 # examine Gabelhouse length categories for LMB & WAE
 psdVal("Largemouth Bass",units="in")
 psdVal("Walleye",units="in")
-# END DEMO code only
-# ============================================================
+# == END DEMO code only ========================================================
 
 # Add Gabelhouse length categories for ALL species
 d %<>% mutate(Lcat=psdAdd(Len,Species1,units="in",verbose=FALSE))
@@ -67,17 +55,21 @@ Spr <- filterD(d,Survey.Year==2013,Mon %in% c("Apr","May","Jun"))
 str(Spr)
 
 BGSpr <- filterD(Spr,Species1=="Bluegill")
+str(BGSpr)
 BGSprLC <- filterD(BGSpr,Waterbody.Name=="LAKE CHETAC",Gear=="BOOM SHOCKER")
+str(BGSprLC)
 SprLC <- filterD(Spr,Waterbody.Name=="LAKE CHETAC")
+str(SprLC)
 
-# ============================================================
-# BEGIN DEMO code only -- not strictly needed for the analysis
+# ==========================================
+# ===== SUMMARY STATISTICS & GRAPHICS ====== 
+
+# == BEGIN DEMO code only -- not strictly needed for the analysis ==============
 # Frequency of each species in spring Lake Chetac summaries
 xtabs(~Species1,data=SprLC)
 # Frequency of Bluegill by month and lake in Spring samples
 xtabs(~Mon+Waterbody.Name,data=BGSpr)
-# END DEMO code only
-# ============================================================
+# == END DEMO code only ========================================================
 
 # Numericanl summaries of lengths of Lake Chetac Bluegill
 Summarize(~Len,data=BGSprLC,digits=2)
@@ -105,6 +97,9 @@ Spr %>%
   as.data.frame() %>%
   write.csv("LenSum_Sawyer_Spr13.csv",row.names=FALSE)
 
+# ==========================================
+# ============ PSD CALCULATIONS ============ 
+
 # frequency of individuals between each length category
 ( freq <- xtabs(~Lcat,data=BGSprLC) )
 # reverse cumulative sum ... freq of each category
@@ -127,14 +122,10 @@ round(rcum/rcum["stock"]*100,1)
 BGSpr %<>% mutate(Lcat2=lencat(Len,breaks=brks,use.names=TRUE,drop.levels=TRUE))
 ( freq <- xtabs(~Waterbody.Name+Lcat2,data=BGSpr) )
 
-# ============================================================
-# BEGIN DEMO code only -- not strictly needed for the analysis
+# == BEGIN DEMO code only -- not strictly needed for the analysis ==============
 # apply() result has wrong orientation, only partial results shown
 apply(freq,FUN=rcumsum,MARGIN=1)
-
-apply(freq,FUN=rcumsum,MARGIN=1)[1:5,1:6]
-# BEGIN DEMO code only -- not strictly needed for the analysis
-# ============================================================
+# == END DEMO code only ========================================================
 
 # properly oriented table of reverse cumulative sums by lake
 ( rcum <- t(apply(freq,FUN=rcumsum,MARGIN=1)) )
@@ -152,4 +143,4 @@ rcum <- rcum[,-1]
 round(rcum/rcum[,"stock"]*100,1)
 
 
-# Script created at 2016-02-25 07:29:31
+# Script created at 2016-03-06 13:07:19

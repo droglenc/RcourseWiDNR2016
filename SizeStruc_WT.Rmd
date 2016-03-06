@@ -20,7 +20,8 @@ rqrd <- c("knitr","fishWiDNR","FSA","dplyr","magrittr")
 ```
 ```{r eval=FALSE, echo=FALSE}
 if (require(FSA)) purl2("SizeStruc_WT.Rmd",moreItems=c("knitr","strOptions"),
-                        topnotes="User must set working directory appropriately.")
+                        topnotes="User must set working directory appropriately.",
+                        delHeader="DELETE FOR PURL")
 ```
 
 \ 
@@ -42,7 +43,6 @@ library(magrittr)    # for %<>%
 ----
 
 # Working with Raw Fish Data from the FM Database
-
 ### Retrieving Raw Fish Data from the FM Database
 
 Raw fish data from the FM Database is extracted and saved into a comma-separated values (CSV) file that will have a common format that you are likely familiar with.  In this workshop, we will all use data retrieved for Sawyer Country.  Outside of this workshop, raw fish data files should be generated using the Raw Data – Fish Raw Data report in the FMDB.  You can then narrow the query down to a specific survey using the search parameters within the database.  Use the Actions button – Download option (choosing CSV as download format) to save the raw data file to your specified working folder.
@@ -57,7 +57,7 @@ The following is what this procedure produced for running this example script on
 
 ```{r echo=3}
 # User must set working directory appropriate to where the CSV file
-#   is saved on their computer ... below if for Derek's computer.
+#   is saved on their computer ... below is for Derek's computer.
 setwd("C:/aaaWork/Web/GitHub/RcourseWiDNR2016")
 ```
 
@@ -67,18 +67,16 @@ The working directory must be set prior to the steps below, unless you are using
 
 ### Loading Raw Fish Data CSV File
 
-The Raw Fish data (CSV) file retrieved from the FM Database must be imported into R for use.  These files may be read directly into R, but the format of the data in each column and the notation for missing values must be explicitly defined.  Additionally, a month field is often needed (but does not exist in the FM Database) and species names must be converted to all lower-case with the exception of the first letter for ease of use with some R functions.  The `fishWiDNR` package contains the `read.FMDB()` function for efficiently reading these data into R and making these adjustments (variable types, add month variable, etc.).
+The Raw Fish data (CSV) file retrieved from the FM Database must be imported into R for use.  These files may be read directly into R, but the format of the data in each column and the notation for missing values must be explicitly defined.  Additionally, a month field is often needed (but does not exist in the FM Database) and species names must be converted to all lower-case with the exception of the first letter for ease of use with some R functions.
 
 An additional hurdle for some analyses is that some records in the FM Database reflect counts of fish with a particular length or range of lengths.  A snippet of Raw Fish data from the FM Database for Sawyer County is shown below.  This snippet illustrates some records where the length bin for an individual fish was recorded (first row) and others where the length bin for multiple fish was recorded (second row).
 
 ```{r echo=FALSE, cache=TRUE, message=FALSE}
-# ============================================================
-# BEGIN DEMO code only -- used to show unexpanded data
+# == BEGIN DEMO code only -- used to show unexpanded data == DELETE FOR PURL ===
 d <- read.FMDB("SAWYER_fish_raw_data_012915.csv") %>%
   select(County,Waterbody.Name,Survey.Year,Number.of.Fish,Length.or.Lower.Length.IN,Length.Upper.IN)
 headtail(d)
-# END DEMO code only
-# ============================================================
+# == END DEMO code only ==================================== DELETE FOR PURL ===
 ```
 
 The analyses demonstrated in this workshop require records for individual fish and prefers more precise length measurements.  Thus, these records need to be expanded (repeated) to represent individual fish and a random length within the length bin needs to be defined for each fish.  For example, if two fish were recorded between 11.5 and 11.9 inches, then it is necessary to create two fish that will have random lengths between 11.5 and 11.9 inches.
@@ -87,11 +85,8 @@ The `read.FMDB()` function in the `fishWiDNR` package is designed to read the FM
 
 The example below (assumes that `setwd()` was set previously) reads the Sawyer County data (CSV) file (and expands the counts) with `read.FMDB()` and then examines the structure (with `str()`) and first and last few rows of the data.frame in R (with `headtail()`).
 
-```{r echo=-c(1:3), cache=TRUE}
+```{r echo=-1, cache=TRUE}
 # Load and examine the Sawyer County FMDB data
-# User must set working directory appropriate to where the CSV file
-#   is saved on their computer ... below if for Derek's computer.
-setwd("C:/aaaWork/Web/GitHub/RcourseWiDNR2016")
 d <- read.FMDB("SAWYER_fish_raw_data_012915.csv",expandCounts=TRUE)
 str(d)
 headtail(d,n=2)
@@ -104,11 +99,15 @@ headtail(d,n=2)
 \newpage
 
 # Manipulating data.frames for Use
+```{r echo=FALSE}
+# ==========================================
+# ======= MANIPULATING DATA.FRAMES ========= 
+```
+
 ### Selecting a Subset of Variables
 This data.frame contains a large number of variables, many of which you are likely not interested in for a particular analysis.  The data.frame can be reduced to a smaller number of variables with `select()` from the `dplyr` package.  This function takes the original data.frame as the first argument followed by the names of the variables that you wish to retain as additional arguments.  The code below reduces the original data.frame to only six variables.
-```{r echo=4}
-# ============================================================
-# BEGIN DEMO code only -- not strictly needed for this analysis
+```{r echo=3}
+# == BEGIN DEMO code only -- not strictly needed for this analysis =============
 # One version of select that does not use piping
 d <- select(d,Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
 ```
@@ -117,11 +116,10 @@ The `%>%` from the `dplyr` package and `%<>%` from the `magrittr` package can si
 ```{r echo=2}
 # A version that uses piping, but assignment is separate
 d <- d %>% select(Species1,Waterbody.Name,Gear,Survey.Year,Mon,Len)
-# END DEMO code only
-# ============================================================
+#  == END DEMO code only ======================================================
 ```
 
-The `%<>%` operator also "pipes" the data.frame on the left of the operator into the first argument of the function to the right of the operator, but it **ALSO** assigns the result from the right of the operator to the object on the left of the operator.  Thus, the code from above is simplified as follows.
+The `%<>%` operator also "pipes" the data.frame on the left of the operator into the first argument of the function to the right of the operator, but it **ALSO** assigns the result from the right of the operator to the object to the left of the operator.  Thus, the code from above is simplified as follows.
 ```{r echo=-(1:3)}
 # Reduce number of variables ... for simplicity only, it is not
 #   necessary for this analysis
@@ -134,9 +132,8 @@ headtail(d,n=2)
 
 ### Adding Variables
 One often needs to construct a new variable from other variables and add this new variable to the data.frame.  A variable can be added to a data.frame with `mutate()` from the `dplyr` package.  This function takes the data.frame as the first argument and an argument of the form `newvar=expression`, where `newvar` is the name for the new variable and `expression` describes how the new variable is constructed.  For example, the following code adds the natural log of length to the data.frame (note that the `%<>%` was used to pipe `d` into the first argument of `mutate()` so that it appears that `mutate()` only has one argument).
-```{r echo=4:5}
-# ============================================================
-# BEGIN DEMO code only -- not strictly needed for this analysis
+```{r echo=3:4}
+# == BEGIN DEMO code only -- not strictly needed for this analysis =============
 # Add natural log of length
 d %<>% mutate(loglen=log(Len))
 headtail(d)
@@ -157,8 +154,7 @@ Specific length categories ("Stock", "Quality", etc.) have been defined for fish
 # examine Gabelhouse length categories for LMB & WAE
 psdVal("Largemouth Bass",units="in")
 psdVal("Walleye",units="in")
-# END DEMO code only
-# ============================================================
+# == END DEMO code only ========================================================
 ```
 
 Thus, for example, Largemouth Bass that are 12 inches and longer are considered "quality" fish, whereas Largemouth Bass 20 inches and longer are categorized as "memorable."
@@ -185,10 +181,13 @@ str(Spr)
 
 Three other subsets are created below for later use.  Can you describe the data in each of these data.frames?
 
-```{r}
+```{r echo=c(1,3,5),results='hide'}
 BGSpr <- filterD(Spr,Species1=="Bluegill")
+str(BGSpr)
 BGSprLC <- filterD(BGSpr,Waterbody.Name=="LAKE CHETAC",Gear=="BOOM SHOCKER")
+str(BGSprLC)
 SprLC <- filterD(Spr,Waterbody.Name=="LAKE CHETAC")
+str(SprLC)
 ```
 
 \ 
@@ -198,22 +197,25 @@ SprLC <- filterD(Spr,Waterbody.Name=="LAKE CHETAC")
 \newpage
 
 # Summary Statistics and Graphics
+```{r echo=FALSE}
+# ==========================================
+# ===== SUMMARY STATISTICS & GRAPHICS ====== 
+```
+
 ### Simple Summaries
 Frequencies of individuals are created with `xtabs()` which takes a formula of the form `~rows` or `~rows+cols`, where `rows` and `cols` generically represent the variables to form the rows and columns, respectively, of the frequency table.  The data.frame that contains the `rows` and `cols` variables must be given in `data=`.
 
 The following two uses of `xtabs()` produce frequency tables of the number of fish of each type captured from Lake Chetac and the number of Bluegill by month and waterbody in spring samples from 2013.
-```{r echo=c(4,6)}
-# ============================================================
-# BEGIN DEMO code only -- not strictly needed for the analysis
+```{r echo=c(3,5)}
+# == BEGIN DEMO code only -- not strictly needed for the analysis ==============
 # Frequency of each species in spring Lake Chetac summaries
 xtabs(~Species1,data=SprLC)
 # Frequency of Bluegill by month and lake in Spring samples
 xtabs(~Mon+Waterbody.Name,data=BGSpr)
-# END DEMO code only
-# ============================================================
+# == END DEMO code only ========================================================
 ```
 
-Summary statistics for a quantitative variable are efficiently computed with `Summarize()` (note the capital S) from the `FSA` package.  This function takes a formula of the form `~quant`, where `quant` generically represents the name of a quantitative variable, as the first argument and the data.frame that contains that variable in `data=`.  The number of decimals for the returned statistics is optionally controlled with `digits=`.  The code below summarizes the lengths of Bluegill captured in Spring samples from Lake Chetac.
+Summary statistics for a quantitative variable are efficiently computed with `Summarize()` (note the capital S) from the `FSA` package.  This function takes a formula of the form `~quant` as the first argument, where `quant` generically represents the name of a quantitative variable, and the data.frame that contains that variable in `data=`.  The number of decimals for the returned statistics is optionally controlled with `digits=`.  The code below summarizes the lengths of Bluegill captured in Spring samples from Lake Chetac.
 ```{r echo=-1}
 # Numericanl summaries of lengths of Lake Chetac Bluegill
 Summarize(~Len,data=BGSprLC,digits=2)
@@ -260,6 +262,11 @@ Spr %>%
 ----
 
 # PSD Calculations
+```{r echo=FALSE}
+# ==========================================
+# ============ PSD CALCULATIONS ============ 
+```
+
 ### Single Waterbody and Species (version 1)
 The PSD values are calculated in three steps -- (1) find the frequency of individuals between each category with `xtabs()` (as described above), (2) compute a reverse cumulative summary with `rcumsum()` from the `xtabs()` result to find the frequency of individuals in each category (i.e., each category is the number of fish of that size **or greater**), and (3) divide each reverse cumulative frequency by the number of stock-length fish and multiply by 100.  These calculations are shown below for the Lake Chetac Bluegill.
 ```{r echo=c(2,4,6,8)}
@@ -277,7 +284,7 @@ Thus, the PSD-Q for Lake Chetac Bluegill in Spring, 2013 is `r formatC(rcum["qua
 
 ### Single Waterbody and Species (version 2)
 Lengths other than those defined for a species may be of particular interest to the fisheries biologist.  For example, one may be interested in PSD-7, which is the percentage of stock-length Bluegill that are 7 inches or longer.  To perform this calculation, 7 inches must first be added to the vector of length categories returned by  `psdVal()` by including the `addLens=` argument.  This vector is then given to `breaks=` in `lencat()` to create a new length category variable that will include a category for 7 inches.  In this example, `use.names=TRUE` was used so that category names ("stock","quality", etc.) are used rather than numbers ("3","6", etc.) and `drop.levels=TRUE` was used to drop categories for which no fish were found in the data.frame (for example, "trophy" will be dropped here because no trophy-length fish were captured).
-```{r echo=c(2,4)}
+```{r echo=c(2,4,5)}
 # Vector of length categories, with one for 7 in
 ( brks <- psdVal("Bluegill",units="in",addLens=7) )
 # New variable with new length categories
@@ -305,16 +312,16 @@ BGSpr %<>% mutate(Lcat2=lencat(Len,breaks=brks,use.names=TRUE,drop.levels=TRUE))
 
 However, it is not as simple to convert these frequencies into PSD values because the reverse cumulative sum must be computed for each **row** of the frequency table.  The `apply()` function can be used to "apply" a function to each row or column of a matrix.  The `apply()` function takes the matrix (or frequency table, in this case) as the first argument and the function to "apply" is given in `FUN=`.  The function will be applied to the rows if `MARGIN=1` and to the columns if `MARGIN=2`.  This calculation is demonstrated below.
 
-```{r, echo=3:4, results='hide'}
-# ============================================================
-# BEGIN DEMO code only -- not strictly needed for the analysis
+```{r, echo=2:3, results='hide'}
+# == BEGIN DEMO code only -- not strictly needed for the analysis ==============
 # apply() result has wrong orientation, only partial results shown
 apply(freq,FUN=rcumsum,MARGIN=1)
+# == END DEMO code only ========================================================
 ```
 ```{r, echo=FALSE}
+# == BEGIN DEMO code only -- used to show unexpanded data == DELETE FOR PURL ===
 apply(freq,FUN=rcumsum,MARGIN=1)[1:5,1:6]
-# BEGIN DEMO code only -- not strictly needed for the analysis
-# ============================================================
+# == END DEMO code only ==================================== DELETE FOR PURL ===
 ```
 
 Unfortunately, the results from `apply()` are not oriented to meet our needs (i.e., water bodies are in columns rather than rows).  The orientation of the result can be "transposed" with `t()` as shown below (and note that this result is assigned to the `rcum` object).
