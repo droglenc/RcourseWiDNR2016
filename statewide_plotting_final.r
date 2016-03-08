@@ -17,7 +17,7 @@ library(gridExtra)   # for tableGrot()
 #prep data
 
 # Load the Sawyer County FMDB data
-setwd("C:/Users/oeled/Documents/R_workshop/2016")
+setwd("C:/Users/hanseg/Documents/R workshop/FM statewide March 2016")
 d <- read.FMDB("SAWYER_fish_raw_data_012915.csv",expandCounts=TRUE)		
 
 # Removing columns with data that will not be used from here on
@@ -129,30 +129,30 @@ windows()
 sturg_LW<-ggplot(data=sturgeon_weights, aes(x=Len,y=Weight.Pounds))+
   geom_point()+
   stat_smooth(method = "loess",se=F,fullrange=F,color='black')
-sturg _LW
+sturg_LW
 #########################################################################
 #3. Aesthetics in ggplot - making your plots pretty
 ##########################################################################
 
 # Remember 2f: X-Y plotting, 4 factor (Length x Weight x Year x Waterbody) (done using 'colour')
 windows()
-L_vs_W_year_waterbody3<- ggplot(data=sturgeon_weights, aes(x=Len,y=Weight.Pounds,colour=Waterbody.Name)) + 
+L_vs_W_year_waterbody<- ggplot(data=sturgeon_weights, aes(x=Len,y=Weight.Pounds,colour=Waterbody.Name)) + 
   geom_point()+
   facet_wrap(~Survey.Year)
-L_vs_W_year_waterbody3
+L_vs_W_year_waterbody
 
 ############### basic appearance ####################
 
 #3A change "theme" using built in commands
 windows()
-L_vs_W_year_waterbody4<-L_vs_W_year_waterbody +   theme_bw()
-print(L_vs_W_year_waterbody4)
+L_vs_W_year_waterbody<-L_vs_W_year_waterbody +   theme_bw()
+print(L_vs_W_year_waterbody)
 
 
 
 #3B change "theme" elements manually
 windows()
-L_vs_W_year_waterbody5<-L_vs_W_year_waterbody +
+L_vs_W_year_waterbody<-L_vs_W_year_waterbody +
   theme(axis.title=element_text(size=16, face="bold"), #works on both axes; change axes independently using axis.title.x and axis.title.y
         axis.text=element_text(size=14), #works on both axes; change axes independently using axis.text.x and axis.text.y
         strip.text.x=element_text(size=16, face="bold"), #changes text of facet box titles
@@ -160,7 +160,7 @@ L_vs_W_year_waterbody5<-L_vs_W_year_waterbody +
         panel.grid.minor = element_line(colour = NA), #removes minor gridlines
         panel.background = element_rect(colour = NA), #removes fill color from plot background
         strip.background=element_blank() ) #removes fill color from facet box titles
-print(L_vs_W_year_waterbody5)
+print(L_vs_W_year_waterbody)
 
 #it is possible to change any aspect of a plot in ggplot
 #list of plot aspects you can change using theme: http://docs.ggplot2.org/current/theme.html
@@ -170,8 +170,8 @@ print(L_vs_W_year_waterbody5)
 ############### Changing or adding text ####################
 #3C Changing axis labels
 windows()
-L_vs_W_year_waterbody6<- L_vs_W_year_waterbody+ xlab("Length (in)")+ylab("Weight (lbs)")
-print(L_vs_W_year_waterbody6)
+L_vs_W_year_waterbody<- L_vs_W_year_waterbody+ xlab("Length (in)")+ylab("Weight (lbs)")
+print(L_vs_W_year_waterbody)
 
 #3C.2 changing axis labels - wrapping text onto two lines
 windows()
